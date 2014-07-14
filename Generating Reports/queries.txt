@@ -1,0 +1,32 @@
+PERSONID
+------------
+select distinct PersonId from person
+
+Number of reviews owned by this person
+---------------------------------------
+select A.OwnerId as OwnerId, count(*) count from (SELECT `ReviewId`,`OwnerId` FROM `review`) A group by A.OwnerId
+
+PERSONID + Number of reviews owned by this person
+--------------------------------------------------
+select Y.PersonId,W.count from (select distinct PersonId from person) Y left join(select Z.OwnerId as OwnerId, count(*) count from (SELECT `ReviewId`,`OwnerId` FROM `review` group by OwnerId,ReviewId) Z group by Z.OwnerId)W on Y.PersonId=W.OwnerId 
+
+PERSONID + Number of reviews owned by this person that have been approved
+-------------------------------------------------------------------------
+
+select Y.PersonId,W.count from (select distinct PersonId from person) Y left join(select Z.OwnerId as OwnerId, count(*) count from (SELECT `ReviewId`,`OwnerId` FROM `review` where status="merged" group by OwnerId,ReviewId) Z group by Z.OwnerId)W on Y.PersonId=W.OwnerId 
+
+
+PERSONID + Number of reviews commented upon by this person
+-----------------------------------------------
+
+select Y.PersonId,W.count from (select distinct PersonId from person) Y left join(select Z.AuthorId as AuthorId, count(*) count from (SELECT `ReviewId`,`AuthorId` FROM `comment` group by AuthorId,ReviewId) Z group by Z.AuthorId)W on Y.PersonId=W.AuthorId 
+
+PERSONID + Total number of comments by this person across all reviews
+----------------------------------------------------------------------
+
+select Y.PersonId,W.count from (select distinct PersonId from person) Y left join(select Z.AuthorId as AuthorId, count(*) count from (SELECT `CommentId`,`AuthorId` FROM `comment` group by AuthorId,CommentId) Z group by Z.AuthorId)W on Y.PersonId=W.AuthorId 
+
+
+
+
+

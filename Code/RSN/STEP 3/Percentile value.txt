@@ -1,0 +1,6 @@
+fp=read.csv(file = "C:\\Users\\proshant\\Desktop\\Start Over\\Networks\\RSN\\STEP 3\\out.csv",header = FALSE,sep = ',')
+> names(fp)
+[1] "V1" "V2" "V3"
+> quantile(fp$V3, c(.95)) 
+     95% 
+1.359967 

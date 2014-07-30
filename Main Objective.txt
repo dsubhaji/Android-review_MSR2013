@@ -1,0 +1,114 @@
+We define here the objective of our Research work|
+=================================================
+
+1. Find out the set of developers (D) who have at least one review in MERGED status.
+
+2.Find out the set of reviews (R) which is the total number of reviews owned by members of D and more than two number of distinct developers who have
+made atleast one comment.
+
+3.Generate DRCN for members of D, RSN for members of R, and DRON for members of D, as specified below.
+
+	DRCN
+	----
+		Generate a developer review communication network (DRCN) in Pajek
+		format whose vertices are developers (D)(each developer is uniquely
+		identified by a PersonID). Two developers are connected by an edge if
+		both have commented on at least one review. The weight of the edge is
+		the number of reviews both have commented on.
+
+	RSN
+	---
+		Generate Review Similarity Network(RSN) based on LDA method in pajek format 
+		whose vertices are Reviews (R)(each Review is uniqely identified by a ReviewId)
+		.Two Review will be connected if the similarity value is higher or equal to the
+		similarity threshold 't' .Similarity threshold is measured using 95th percentile
+		of the KL value distribution.The wight will be KL value.
+	
+	DRON
+	----
+		Generate Developer Review Ownership Network(DRON) based on LDA method in pajek format 
+		whose vertices are Developers (D)(each Developer is uniqely identified by a ReviewId)
+		.Two Developer will be connected if Review which they own is connected in RSN.The wight
+		of the edge is the number of review both own and they have connection in RSN.
+		
+
+4.Generate developer master file for members of D with the below attributes
+
+	1. Person id
+	2. Name
+	3. Email
+	4. IsBotAccount
+	5.Number of reviews owned by this person
+	6. Number of reviews owned by this person that are in status = merged
+	7. Number of reviews owned by this person that are in status = abandoned
+	8. Number of reviews commented upon by this person
+	9. Number of comments by this person across all reviews
+	10. Average number of comments per review by this person
+	11.Number of approvals by this person
+	12.Average approval score by this person (total approval scores divided by number of approvals)
+	13.Median approval score by this person
+	14.Time stamp of first comment
+	15.Time stamp of last comment
+	16. Comment span (difference in hours between first and last comment)
+	17. Time stamp of first approval
+	18. Time stamp of last approval
+	19.Approval span (difference in hours between first and last approval)
+	20. Degree of this person in DRCN
+	21. Betweenness of this person in DRCN
+	22. Clustering coefficient of this person in DRCN (Use function transitivity() in igraph)
+	23. Closeness centrality of this person in DRCN (Use function closeness() in igraph
+	24. Eigenvector centrality of this person in DRCN (Use function evcent() in igraph)
+	25. Pagerank of this person in DRCN  (Use fucntion page.rank() in igraph)
+	26.New field = Average elapsed time of all reviews owned by the developer (elapsed time in hours for each review as calculated in the review master file) 		avg.elapsed.time)
+	27.avg.elapsed.time.merged = Average elapsed time of all reviews owned by the developer which are in MERGED status (elapsedtime in hours for each review as 		calculated in the review master file).
+	28.median.elapsed.time.merged = Median elapsed time of all reviews owned by the developer which are in MERGED status (elapsed time in hours for each review as 		calculated in the review master file).
+	29.comments-on-owned
+	30.comments-on-nonowned
+	31.congruence
+
+
+5.Generate review master file for members of R, rename the columns as below (left hand side shows existing name, right hand side shows newname; for example, mark ReviewId as review.id in the new file.)
+
+
+	1. ReviewId - review.id
+	2. OwnerId - owner.id
+	3. CreatedOn - cerated.on
+	4. NumberOfPatches - number.of.patches
+	5. LastUpdatedOn - last.updated.on
+	6. Project - project
+	7. Branch - branch
+	8. SubmitType - submit.type
+	9. Status - status
+	10. Elasped time in hours - elapsed.time
+	11. Number of approvals - noof.approvals
+	12. Net approval score - net.approval.score
+	13. Average approval score - avg.approval.score
+	14. Number of comments - noof.comments
+	15. Timestamp of last comment - timestamp.last.comment
+	16. Timestamp of first comment - timestamp.first.comment
+	17. Comment Span in Hours - comment.span
+	18. Number of total reviews owned by owner - noof.reviews.owned.by.owner
+	19. Number of total approvals given by owner - noof.approvals.by.owner
+	20. Number of comments by owner on this review -
+	noof.comments.by.owner.this.review
+	21 - Number of total comments by owner across all reviews -
+	noof.comments.by.owner.all.reviews
+	22 - Number of reviews of owner which have a status = "merged" -
+	noof.merged.reviews.of.owner
+	23 - What is the average approval score of the owner -avg.approval.score.of.owner
+
+6.Generate a csv file with the folloing parameters from DRON network
+
+	1.Dron.OwnerId
+	2.Dron.Degree	
+	3.Dron.Betweeness
+	4.Dron.Transitivity
+	5.Dron.closeness
+	6.Dron.EigenValue
+	7.Dron.Pagerank
+
+
+
+
+
+

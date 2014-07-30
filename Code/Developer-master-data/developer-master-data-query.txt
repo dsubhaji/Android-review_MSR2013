@@ -1,0 +1,201 @@
+1. Person id
+2. Name
+3. Email
+4. IsBotAccount
+
+select A.OwnerId,Name,Email,IsbotAccount from set_d A left join (SELECT distinct `PersonId` as OwnerId,`Name`,`Email`,`IsbotAccount` FROM `person`)B on A.OwnerId=B.OwnerId
+
+------------------------------------------------------------------------------------------------------------------
+5.Number of reviews owned by this person
+
+SELECT A.OwnerId,count(*) FROM `review` A natural join set_d B group by A.OwnerId
+
+------------------------------------------------------------------------------------------------------------------
+6. Number of reviews owned by this person that are in status = merged
+
+select D.OwnerId,C.cnt from set_d D left join (SELECT A.OwnerId,count(*) as cnt FROM (select * from `review` where Status='merged') A natural join set_d B group by A.OwnerId) C on D.OwnerId=C.OwnerId
+
+------------------------------------------------------------------------------------------------------------------
+7. Number of reviews owned by this person that are in status = abandoned
+
+select D.OwnerId,C.cnt from set_d D left join (SELECT A.OwnerId,count(*) as cnt FROM (select * from `review` where Status='Abandoned') A natural join set_d B group by A.OwnerId) C on D.OwnerId=C.OwnerId
+------------------------------------------------------------------------------------------------------------------
+
+8. Number of reviews commented upon by this person
+
+select C.OwnerId,B.cnt from set_d C left join (select A.OwnerId,count(*) as cnt from (select ReviewId,AuthorId as OwnerId from comment group by ReviewId,AuthorId) A group by A.OwnerId) B on C.OwnerId=B.OwnerId
+
+
+--------------------------------------------------------------------------------------------------------------------
+9. Number of comments by this person across all reviews
+
+select A.OwnerId, B.cnt from set_d A left join (select AuthorId as OwnerId,count(*) cnt from comment group by AuthorId) B  on A.OwnerId=B.OwnerId
+
+
+-------------------------------------------------------------------------------------------------------------------
+10. Average number of comments per review by this person
+
+select E.OwnerId,E.cnt1/F.cnt from (select A.OwnerId, B.cnt as cnt1 from set_d A left join (select AuthorId as OwnerId,count(*) cnt from comment group by AuthorId) B  on A.OwnerId=B.OwnerId)E natural join (select C.OwnerId,B.cnt from set_d C left join (select A.OwnerId,count(*) as cnt from (select ReviewId,AuthorId as OwnerId from comment group by ReviewId,AuthorId) A group by A.OwnerId) B on C.OwnerId=B.OwnerId) F
+
+------------------------------------------------------------------------------------------------------------------
+11.Number of approvals by this person
+
+select A.OwnerId,B.cnt from set_d A left join (SELECT PersonId as OwnerId ,count(*) as cnt FROM `approval` group by PersonId) B on A.OwnerId=B.OwnerId
+
+------------------------------------------------------------------------------------------------------------------
+
+12.Average approval score by this person (total approval scores divided by number of approvals)
+
+select A.OwnerId,B.cnt from set_d A left join (SELECT PersonId as OwnerId ,avg(ReviewedStatus) as cnt FROM `approval` group by PersonId) B on A.OwnerId=B.OwnerId.
+
+------------------------------------------------------------------------------------------------------------------
+13.Median approval score by this person
+
+1.select distinct A.OwnerId,B.cnt from  set_d A left join (SELECT `ReviewId`,`PersonId` as OwnerId,ReviewedStatus as cnt FROM `approval`) B on A.OwnerId=B.OwnerId
+
+2.SELECT A.OwnerId,B.median FROM owner_with_id_notbot1 A left join temp B on A.OwnerId=B.OwnerId
+
+------------------------------------------------------------------------------------------------------------------
+
+14.Time stamp of first comment
+15.Time stamp of last comment
+16. Comment span (difference in hours between first and last comment)
+
+
+select A.OwnerId,mini,maxi,diffdate from set_d A left join (SELECT `AuthorId` as OwnerId,min(`WrittenOn`)as mini,max(`WrittenOn`) as maxi,TIMESTAMPDIFF(MINUTE,min(`WrittenOn`),max(`WrittenOn`))/60 as diffdate FROM `comment` group by `AuthorId`) B on A.OwnerId=B.OwnerId
+
+----------------------------------------------------------------------------------------------------------------------
+
+17. Time stamp of first approval
+18. Time stamp of last approval
+19.Approval span (difference in hours between first and last approval)
+
+
+select A.OwnerId,mini,maxi,TIMESTAMPDIFF(MINUTE,mini,maxi)/60 from set_d A left join (SELECT `PersonId` as OwnerId,min(`ReviewedWhen`) as  mini ,max(`ReviewedWhen`) as maxi FROM `approval` group by PersonId)B on A.OwnerId=B.OwnerId
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+20. Degree of this person in DRCN
+21. Betweenness of this person in DRCN
+22. Clustering coefficient of this person in DRCN (Use function
+transitivity() in igraph)
+23. Closeness centrality of this person in DRCN (Use function
+closeness() in igraph
+24. Eigenvector centrality of this person in DRCN (Use function
+evcent() in igraph)
+25. Pagerank of this person in DRCN  (Use fucntion page.rank() in igraph)
+
+
+g=read.graph("C:\\Users\\proshant\\Desktop\\20July14\\DRCN.net",format="pajek")
+d=degree(g)
+b=betweenness(g)
+t=transitivity(g,type="local",vids=V(g))
+c=closeness(g,vids=V(g))
+e=evcent(g)
+p=page.rank(g)
+
+write.table(x=d,"C:\\Users\\proshant\\Desktop\\20July14\\degree.csv",sep = ",")
+write.table(x=b,"C:\\Users\\proshant\\Desktop\\20July14\\betweenness.csv",sep = ",")
+write.table(x=t,"C:\\Users\\proshant\\Desktop\\20July14\\transitivity.csv",sep = ",")
+write.table(x=c,"C:\\Users\\proshant\\Desktop\\20July14\\closeness.csv",sep = ",")
+write.table(x=e$vector,"C:\\Users\\proshant\\Desktop\\20July14\\eigen.csv",sep = ",")
+write.table(x=p$vector,"C:\\Users\\proshant\\Desktop\\20July14\\page.csv",sep = ",")
+
+------------------------------------------------------------------------------------------------
+26.New field = Average elapsed time of all reviews owned by the developer (elapsed
+time in hours for each review as calculated in the review master file)
+(avg.elapsed.time)
+
+
+select A.OwnerId,B.average from set_d A left join (SELECT distinct OwnerId,avg(elaspedtime) as average FROM `temp` group by OwnerId) B on A.OwnerId=B.OwnerId
+
+-----------------------------------------------------------------------------------------------------
+27.avg.elapsed.time.merged = Average elapsed time of all reviews owned by the developer which are in MERGED status (elapsedtime in hours for each review as calculated in the review master file).
+
+select A.OwnerId,B.average from set_d A left join (SELECT distinct OwnerId,avg(elaspedtime) as average FROM `temp` where Sta='merged' group by OwnerId) B on A.OwnerId=B.OwnerId
+
+------------------------------------------------------------------------------------------------------
+28.median.elapsed.time.merged = Median elapsed time of all reviews owned by the developer which are in MERGED status (elapsed time in hours for each review as calculated in the review master file).
+
+SELECT `OwnerId`,`elaspedtime` FROM `temp` WHERE Sta='merged' 
+
+SELECT A.OwnerId,B.median FROM set_d A left join temp1 B on A.OwnerId=B.OwnerId
+
+-----------------------------------------------------------------------------------------------------------
+
+29.comments-on-owned
+
+select F.OwnerId,G.cnt from set_d  F left join (select E.OwnerId,count(*) as cnt from (select C.ReviewId,C.OwnerId from (select B.OwnerId,B.ReviewId from set_d A natural join (SELECT AuthorId as OwnerId,ReviewId FROM `comment` natural join set_r)B) C left join review D on C.ReviewId=D.ReviewId and C.OwnerId=D.OwnerId where D.ReviewId is not NULL or D.OwnerId is not NULL ) E group by E.OwnerId) G on F.OwnerId=G.OwnerId
+
+-----------------------------------------------------------------------------------------------------------
+
+30.comments-on-nonowned
+
+
+select F.OwnerId,G.cnt from set_d  F left join (select E.OwnerId,count(*) as cnt from (select C.ReviewId,C.OwnerId from (select B.OwnerId,B.ReviewId from set_d A natural join (SELECT AuthorId as OwnerId,ReviewId FROM `comment` natural join set_r)B) C left join review D on C.ReviewId=D.ReviewId and C.OwnerId=D.OwnerId where D.ReviewId is NULL or D.OwnerId is NULL ) E group by E.OwnerId) G on F.OwnerId=G.OwnerId
+
+
+-----------------------------------------------------------------------------------------------------------
+
+31.congruence
+
+	UNION
+	-------------
+
+select F.p1 as p1,G.id as p2 from (select E.id as p1,D.a2 as OwnerId,D.cnt as cnt from (select C.a1 OwnerId,C.a2 a2,count(*) as cnt from (select A.a1,B.a2 from (SELECT ReviewId, AuthorId as a1 from comment where AuthorId is not NULL) A 
+natural join (SELECT ReviewId, AuthorId as a2 from comment  where AuthorId is not NULL) B where A.a1<>B.a2)C group by C.a1,C.a2)D natural join set_d E)F natural join set_d G
+UNION
+select H.id1 as p1,I.id as p2 from (select G.id as id1,F.Own2 as OwnerId,F.cnt from (select E.Own1 as OwnerId,E.Own2,count(*) as cnt from (select D.Own1,C.OwnerId as Own2 from review C natural join (select A.OwnerId as Own1,B.ReviewId2 as ReviewId from review A natural join (SELECT ReviewId1 as ReviewId,ReviewId2 FROM `set_rsn_kldistance`) B) D)E group by E.Own1,E.Own2)F natural join set_d G)H natural join set_d I
+
+
+
+	INTERSECT
+	-----------
+select distinct H.p1 as p1,H.p2 as p2 from(select F.p1 as p1,G.id as p2 from (select E.id as p1,D.a2 as OwnerId,D.cnt as cnt from (select C.a1 OwnerId,C.a2 a2,count(*) as cnt from (select A.a1,B.a2 from (SELECT ReviewId, AuthorId as a1 from comment where AuthorId is not NULL) A natural join (SELECT ReviewId, AuthorId as a2 from comment  where AuthorId is not NULL) B where A.a1<>B.a2)C group by C.a1,C.a2)D natural join set_d E)F natural join set_d G)H
+
+inner join
+
+(select H.id1 as p1,I.id as p2 from (select G.id as id1,F.Own2 as OwnerId,F.cnt from (select E.Own1 as OwnerId,E.Own2,count(*) as cnt from (select D.Own1,C.OwnerId as Own2 from review C natural join (select A.OwnerId as Own1,B.ReviewId2 as ReviewId from review A natural join (SELECT ReviewId1 as ReviewId,ReviewId2 FROM `set_rsn_kldistance`) B) D)E group by E.Own1,E.Own2)F natural join set_d G)H natural join set_d I) K using(p1,p2)
+
+
+
+
+	congruence from union and intersected value
+	----------------------------------------
+select OwnerId,C.cnt2/D.cnt1 from (select A.OwnerId ,B.cnt2 from set_d A left join (SELECT `OwnerId` as id,count(*) as cnt2 FROM `tempintersect` group by `OwnerId`)B on A.id=B.id) C natural join (select A.OwnerId ,B.cnt1 from set_d A left join (SELECT `OwnerId` as id,count(*) as cnt1 FROM `tempunion` group by `OwnerId`)B on A.id=B.id)D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

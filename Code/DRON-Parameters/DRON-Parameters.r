@@ -1,0 +1,16 @@
+library(igraph)
+g=read.graph("DRON.net",format="pajek")
+d=degree(g)
+b=betweenness(g)
+t=transitivity(g,type="local",vids=V(g))
+c=closeness(g,vids=V(g))
+e=evcent(g)
+p=page.rank(g)
+
+write.table(x=d,"degree.csv",sep = ",")
+write.table(x=b,"betweenness.csv",sep = ",")
+write.table(x=t,"transitivity.csv",sep = ",")
+write.table(x=c,"closeness.csv",sep = ",")
+write.table(x=e$vector,"eigen.csv",sep = ",")
+write.table(x=p$vector,"page.csv",sep = ",")
+

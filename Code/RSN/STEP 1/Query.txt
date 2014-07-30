@@ -1,0 +1,1 @@
+SELECT distinct `ReviewId`,1,concat(`Subject`,`Message`) FROM `review` natural join set_r

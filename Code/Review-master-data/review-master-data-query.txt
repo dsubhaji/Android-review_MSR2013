@@ -1,0 +1,96 @@
+1. ReviewId - review.id
+2. OwnerId - owner.id
+3. CreatedOn - cerated.on
+4. NumberOfPatches - number.of.patches
+5. LastUpdatedOn - last.updated.on
+6. Project - project
+7. Branch - branch
+8. SubmitType - submit.type
+9. Status - status
+
+
+select B.* from set_r A left join (SELECT distinct `ReviewId`,`OwnerId`,`CreatedOn`,`NumberOfPatches`,`LastUpdatedOn`,`Project`,`Branch`,`SubmitType`,`Status` FROM `review`)B on A.ReviewId=B.ReviewId
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+10.ElapsedTime (LastUpdatedOn minus CreatedOn)
+
+select A.* from set_r B left join(SELECT ReviewId, TIMESTAMPDIFF(MINUTE,`CreatedOn`,`LastUpdatedOn`)/60 from review)A on A.ReviewId=B.ReviewId
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+11.Number of approvals
+12.Net approval score (Sum of Approval.ReviewedStatus field)
+13.Average approval score (Net approval score divided by number of approvals)
+
+
+select A.ReviewId,B.cnt,B.total,B.net from set_r A left join (SELECT `ReviewId`,count(*) as cnt,sum(`ReviewedStatus`) as total,avg(`ReviewedStatus`) as net FROM `approval` group by `ReviewId`)B on A.ReviewId=B.ReviewId
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+14.Number of comments
+15.Date of first comment
+16.Date of last comment
+17.Comment span (Date of last comment minus Date of first comment)
+
+
+select A.ReviewId,B.cnt,B.maxdate,B.mindate,B.diffdate from set_r A left join (SELECT `ReviewId`,count(*)as cnt,max(`WrittenOn`) as maxdate,min(`WrittenOn`) as mindate,TIMESTAMPDIFF(MINUTE,min(`WrittenOn`),max(`WrittenOn`))/60 as diffdate  FROM `comment` group by ReviewId)B on A.ReviewId=B.ReviewId
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+18.Number of total reviews owned by owner
+
+
+select C.ReviewId,D.cnt from set_r C left join(select A.ReviewId ,B.cnt from review A natural join (SELECT `OwnerId`,count(*) as cnt FROM `review` group by `OwnerId`) B) D on D.ReviewId=C.ReviewId
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+19.Number of total approvals given by owner
+
+select E.ReviewId,F.cnt from set_r E left join(select C.ReviewId,D.cnt from review C natural join (select A.OwnerId,B.cnt from (select distinct OwnerId from review) A left join (SELECT PersonId as OwnerId,count(*) as cnt FROM `approval` group by PersonId)B on A.OwnerId=B.OwnerId)D) F on F.ReviewId=E.ReviewId
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+20.Number of comments by owner on this review
+
+select G.ReviewId,F.cnt from set_r G left join (select E.ReviewId,D.cnt from review E left join (select C.ReviewId,C.OwnerId ,count(*) as cnt from (select B.ReviewId,B.OwnerId from review A natural join (SELECT ReviewId,AuthorId as OwnerId FROM comment)B)C group by C.ReviewId,C.OwnerId) D on E.ReviewId=D.ReviewId)F on F.ReviewId=G.ReviewId
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+21.Number of total comments by owner across all reviews
+
+
+select F.* from set_r G left join (select E.reviewId,D.cnt from review E left join (select C.ReviewId,C.OwnerId,A.cnt from (SELECT `AuthorId` as OwnerId,count(*) as cnt  FROM `comment` group by AuthorId)A natural join review C)D on E.ReviewId=D.ReviewId) F on F.ReviewId=G.ReviewId
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+22.Number of reviews of owner which have a status = "merged"
+
+
+select F.* from set_r G left join (select E.ReviewId,D.cnt from review E left join (select A.ReviewId ,B.cnt from review A natural join (SELECT C.`OwnerId`,count(*) as cnt FROM (select * from `review` where status='merged')C group by `OwnerId`) B)D on D.ReviewId=E.ReviewId)F on F.ReviewId=G.ReviewId
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+23.What is the average approval score of the owner 
+
+select F.* from set_r G left join(select B.ReviewId,A.cnt from review B left join (SELECT distinct `PersonId` as OwnerId,avg(`ReviewedStatus`) as cnt FROM `approval` group by `PersonId`)A on B.OwnerId=A.OwnerId)F on F.ReviewId=G.ReviewId
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

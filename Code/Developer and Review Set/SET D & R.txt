@@ -1,0 +1,11 @@
+1. Find out the set of developers (D) who have at least one review in MERGED status.
+-------------------------------------------------------------------------------------
+
+SELECT distinct `OwnerId` FROM `review` WHERE `Status`='merged'
+
+
+2. Find out the set of reviews (R) which is the total number of reviews have been commented by Owner and at least TWO of these set (D) of developers
+-----------------------------------------------------------------------------------------------------------------------
+
+select C.ReviewId,count(*) from (select ReviewId,AuthorId from (SELECT distinct ReviewId FROM `review` natural join set_d)A natural join comment B group by ReviewId,AuthorId)C group by C.ReviewId having count(*)>2
+

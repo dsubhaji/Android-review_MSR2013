@@ -53,7 +53,7 @@ select A.OwnerId,B.cnt from set_d A left join (SELECT PersonId as OwnerId ,avg(R
 
 1.select distinct A.OwnerId,B.cnt from  set_d A left join (SELECT `ReviewId`,`PersonId` as OwnerId,ReviewedStatus as cnt FROM `approval`) B on A.OwnerId=B.OwnerId
 
-2.SELECT A.OwnerId,B.median FROM owner_with_id_notbot1 A left join temp B on A.OwnerId=B.OwnerId
+2.SELECT A.OwnerId,B.median FROM set_d A left join temp B on A.OwnerId=B.OwnerId
 
 ------------------------------------------------------------------------------------------------------------------
 
@@ -83,7 +83,7 @@ closeness() in igraph
 evcent() in igraph)
 25. Pagerank of this person in DRCN  (Use fucntion page.rank() in igraph)
 
-
+library(igraph)
 g=read.graph("C:\\Users\\proshant\\Desktop\\20July14\\DRCN.net",format="pajek")
 d=degree(g)
 b=betweenness(g)

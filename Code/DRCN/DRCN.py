@@ -3,7 +3,7 @@
 #cursor = db.cursor()
 import mysql.connector
 
-db = mysql.connector.connect(user='root', password='',host='127.0.0.1',database='android_review_msr2013')
+db = mysql.connector.connect(user='root', password='',host='127.0.0.1',database='android_review')
 cursor = db.cursor()
 
 filename='DRCN.net'

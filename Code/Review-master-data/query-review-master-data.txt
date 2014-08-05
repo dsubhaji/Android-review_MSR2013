@@ -70,6 +70,65 @@ select F.* from set_r G left join (select E.ReviewId,D.cnt from review E left jo
 
 select F.* from set_r G left join(select B.ReviewId,A.cnt from review B left join (SELECT distinct `PersonId` as OwnerId,avg(`ReviewedStatus`) as cnt FROM `approval` group by `PersonId`)A on B.OwnerId=A.OwnerId)F on F.ReviewId=G.ReviewId
 
+24.	Number of total reviews owned by owner in merged status (reviews.owned.by.owner.merged)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+select C.ReviewId,D.cnt from set_r C left join(select A.ReviewId ,B.cnt from review A natural join (SELECT `OwnerId`,count(*) as cnt FROM `review` where status='merged' group by `OwnerId`) B) D on D.ReviewId=C.ReviewId
+
+25.	Median approval score (median.approval.score)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1.select ReviewId,`ReviewedStatus` from approval
+
+2.SELECT set_r.ReviewId,median FROM set_r left join temp1 on set_r.ReviewId=temp1.ReviewId
+
+26.	Number of comments by non-owners on this review (noof.comments.by.nonowners)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+select ReviewId,cnt2-cnt1 as cnt from (select G.ReviewId,F.cnt as cnt1 from set_r G left join (select E.ReviewId,D.cnt from review E left join (select C.ReviewId,C.OwnerId ,count(*) as cnt from (select B.ReviewId,B.OwnerId from review A natural join (SELECT ReviewId,AuthorId as OwnerId FROM comment)B)C group by C.ReviewId,C.OwnerId) D on E.ReviewId=D.ReviewId)F on F.ReviewId=G.ReviewId)A natural join (select A.ReviewId,B.cnt as cnt2,B.maxdate,B.mindate,B.diffdate from set_r A left join (SELECT `ReviewId`,count(*)as cnt,max(`WrittenOn`) as maxdate,min(`WrittenOn`) as mindate,TIMESTAMPDIFF(MINUTE,min(`WrittenOn`),max(`WrittenOn`))/60 as diffdate  FROM `comment` group by ReviewId)B on A.ReviewId=B.ReviewId) B
+
+
+27.	Median approval score of owner (median.approval.score.owner)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+1.select `PersonId`,`ReviewedStatus` from approval
+
+2.select A.ReviewId,B.median from set_r A left join (select ReviewId,median from temp2 natural join review)B on A.REviewId=B.REviewId
+
+
+
+28.	RSN degree (rsn.degree)
+29.	RSN Betweenness (rsn.betweenness)
+30.	RSN clustering coefficient (rsn.clustcoeff)
+31.	RSN closeness centrality (rsn.closenesscentrality)
+32.	RSN eigenvector centrality (rsn.eigencentrality)
+33.	RSN pagerank (rsn.pagerank)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+library(igraph)
+g=read.graph("C:\\Users\\proshant\\Desktop\\RSN.net",format="pajek")
+d=degree(g)
+b=betweenness(g)
+t=transitivity(g,type="local",vids=V(g))
+c=closeness(g,vids=V(g))
+e=evcent(g)
+p=page.rank(g)
+
+write.table(x=d,"C:\\Users\\proshant\\Desktop\\degree.csv",sep = ",")
+write.table(x=b,"C:\\Users\\proshant\\Desktop\\betweenness.csv",sep = ",")
+write.table(x=t,"C:\\Users\\proshant\\Desktop\\transitivity.csv",sep = ",")
+write.table(x=c,"C:\\Users\\proshant\\Desktop\\closeness.csv",sep = ",")
+write.table(x=e$vector,"C:\\Users\\proshant\\Desktop\\eigen.csv",sep = ",")
+write.table(x=p$vector,"C:\\Users\\proshant\\Desktop\\page.csv",sep = ",")
+
+
+
+
+
+
+
 
 
 

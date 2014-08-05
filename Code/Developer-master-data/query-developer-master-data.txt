@@ -8,12 +8,23 @@ select A.OwnerId,Name,Email,IsbotAccount from set_d A left join (SELECT distinct
 ------------------------------------------------------------------------------------------------------------------
 5.Number of reviews owned by this person
 
-SELECT A.OwnerId,count(*) FROM `review` A natural join set_d B group by A.OwnerId
+select B.OwnerId, A.cnt from  set_d B left join(SELECT A.OwnerId,count(*) as cnt FROM `review` A natural join set_d B group by A.OwnerId)A on A.OwnerId=B.OwnerId
 
 ------------------------------------------------------------------------------------------------------------------
 6. Number of reviews owned by this person that are in status = merged
 
 select D.OwnerId,C.cnt from set_d D left join (SELECT A.OwnerId,count(*) as cnt FROM (select * from `review` where Status='merged') A natural join set_d B group by A.OwnerId) C on D.OwnerId=C.OwnerId
+
+
+
+7.	Number of reviews merged divided by number of reviews owned (merged.by.owned)
+-----------------------------------------------------------------------------------------------------------------------
+
+
+select OwnerId,cnt1-cnt2 from (select B.OwnerId, A.cnt as cnt1 from  set_d B left join(SELECT A.OwnerId,count(*) as cnt FROM `review` A natural join set_d B group by A.OwnerId)A on A.OwnerId=B.OwnerId)A natural join (select D.OwnerId,C.cnt as cnt2 from set_d D left join (SELECT A.OwnerId,count(*) as cnt FROM (select * from `review` where Status='merged') A natural join set_d B group by A.OwnerId) C on D.OwnerId=C.OwnerId)B
+
+
+
 
 ------------------------------------------------------------------------------------------------------------------
 7. Number of reviews owned by this person that are in status = abandoned
@@ -53,7 +64,7 @@ select A.OwnerId,B.cnt from set_d A left join (SELECT PersonId as OwnerId ,avg(R
 
 1.select distinct A.OwnerId,B.cnt from  set_d A left join (SELECT `ReviewId`,`PersonId` as OwnerId,ReviewedStatus as cnt FROM `approval`) B on A.OwnerId=B.OwnerId
 
-2.SELECT A.OwnerId,B.median FROM set_d A left join temp B on A.OwnerId=B.OwnerId
+2.SELECT A.OwnerId,B.median FROM set_d A left join temp3 B on A.OwnerId=B.OwnerId
 
 ------------------------------------------------------------------------------------------------------------------
 
@@ -105,19 +116,31 @@ time in hours for each review as calculated in the review master file)
 (avg.elapsed.time)
 
 
-select A.OwnerId,B.average from set_d A left join (SELECT distinct OwnerId,avg(elaspedtime) as average FROM `temp` group by OwnerId) B on A.OwnerId=B.OwnerId
+select A.OwnerId,B.average from set_d A left join (SELECT distinct OwnerId,avg(elaspedtime) as average FROM `temp4` group by OwnerId) B on A.OwnerId=B.OwnerId
 
 -----------------------------------------------------------------------------------------------------
 27.avg.elapsed.time.merged = Average elapsed time of all reviews owned by the developer which are in MERGED status (elapsedtime in hours for each review as calculated in the review master file).
 
-select A.OwnerId,B.average from set_d A left join (SELECT distinct OwnerId,avg(elaspedtime) as average FROM `temp` where Sta='merged' group by OwnerId) B on A.OwnerId=B.OwnerId
+select A.OwnerId,B.average from set_d A left join (SELECT distinct OwnerId,avg(elaspedtime) as average FROM `temp4` where Sta='merged' group by OwnerId) B on A.OwnerId=B.OwnerId
 
 ------------------------------------------------------------------------------------------------------
 28.median.elapsed.time.merged = Median elapsed time of all reviews owned by the developer which are in MERGED status (elapsed time in hours for each review as calculated in the review master file).
 
-SELECT `OwnerId`,`elaspedtime` FROM `temp` WHERE Sta='merged' 
+SELECT `OwnerId`,`elaspedtime` FROM `temp4` WHERE Sta='merged' 
 
-SELECT A.OwnerId,B.median FROM set_d A left join temp1 B on A.OwnerId=B.OwnerId
+SELECT A.OwnerId,B.madian FROM set_d A left join temp5 B on A.OwnerId=B.OwnerId
+
+
+
+------------------------------------------------------------------------------------------------------
+28.10.	Median elapsed time of all reviews owned by the person(median.elapsed.time)
+
+SELECT `OwnerId`,`elaspedtime` FROM `temp4` 
+
+SELECT A.OwnerId,B.median FROM set_d A left join temp6 B on A.OwnerId=B.OwnerId
+
+
+
 
 -----------------------------------------------------------------------------------------------------------
 

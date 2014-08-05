@@ -1,0 +1,28 @@
+1. D = 678 unique developers who own at least one review that is in the MERGED status.
+-------------------------------------------------------------------------------------
+
+SELECT distinct `OwnerId` FROM `review` WHERE `Status`='merged'
+
+2.R = 3,038 reviews either in MERGED or ABANDONED status which are owned by members of D and which have been commented by its owner plus two other developers in D.
+-------------------------------------------------------------------------------------
+
+1.select C.ReviewId,D.ReviewId as rev,C.OwnerId from (select ReviewId,AuthorId as OwnerId from (select OwnerId as AuthorId from set_d)A natural join comment B)C left join (select * from review where `Status`='merged' or `Status`='Abandoned' ) D on C.OwnerId=D.OwnerId and C.ReviewId=D.ReviewId into outfile 'd:/test.csv'
+
+
+2.select distinct B.ReviewId from (SELECT distinct ReviewId FROM `temp5` WHERE rev<>0 )B natural join (select distinct B.ReviewId from (select ReviewId from (select ReviewId ,OwnerId from temp5 where Rev=0)A group by A.ReviewId,A.OwnerId)B group by B.ReviewId having count(*)>=2)A
+
+------------------------------------------------------------------------------------------------------------------------
+A = All the approvals on members of R, which are approved by members of D: how many?
+
+select count(*) from (select OwnerId as PersonId from set_d)A natural join approval B
+ 
+total=11615
+------------------------------------------------------------------------------------------------------------------------
+
+C = All the comments on R, made by members of D: how many?
+
+select count(*) from(select OwnerId as AuthorId from set_d) A natural join comment B
+
+total=32782
+
+
